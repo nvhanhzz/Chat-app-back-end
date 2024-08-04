@@ -27,3 +27,14 @@ export const register = (req: Request, res: Response, next: NextFunction): Respo
 
     next();
 }
+
+export const login = (req: Request, res: Response, next: NextFunction): Response | void => {
+    if (!req.body.email) {
+        return res.status(400).json({ message: 'Email không được để trống.' });
+    }
+    if (!req.body.password) {
+        return res.status(400).json({ message: 'Mật khẩu không được để trống.' });
+    }
+
+    next();
+}

@@ -37,3 +37,28 @@ export const register = async (req: Request, res: Response): Promise<Response> =
 
     return res.status(200).json({ "message": "Đăng ký thành công." });
 }
+
+// [POST] /api/v1/auth/login
+export const login = async (req: Request, res: Response): Promise<Response> => {
+    const TOKEN_EXP: number = parseInt(process.env.TOKEN_EXP, 10);
+    const user = await User.findOne({
+        email: req.body.email,
+        deleted: false
+    });
+    if (!user) {
+        return res.status(404).json({ message: "Email hoặc mật khẩu không chính xác." });
+    }
+
+    const confirm = await comparePassword(req.body.password, user.password.toString());
+    if (!confirm) {
+        return res.status(404).json({ message: "Email hoặc mật khẩu không chính xác." });
+    }
+
+    if (user.status !== ListStatus.ACTIVE) {
+        return res.status(404).json({ message: "Tài khoản đã bị khóa." });
+    }
+
+    generateToken(res, user.id, TOKEN_EXP, "token");
+
+    return res.status(200).json({ message: "Đăng nhập thành công." });
+}

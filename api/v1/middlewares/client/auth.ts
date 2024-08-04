@@ -60,14 +60,14 @@ export const checkToken = (options: CheckTokenOptions = { tokenName: '' }) => {
 
 export const isLoggedIn = (req: Request & { currentUser?: object }, res: Response, next: NextFunction) => {
     if (!req.currentUser) {
-        return res.status(403).json({ message: 'You do not have permission to access this resource.' });
+        return res.status(403).json({ message: 'Cần đăng nhập trước.' });
     }
     return next();
 }
 
 export const isLoggedOut = (req: Request & { currentUser?: object }, res: Response, next: NextFunction) => {
     if (req.currentUser) {
-        return res.status(403).json({ message: 'You do not have permission to access this resource.' });
+        return res.status(403).json({ message: 'Cần đăng xuất trước.' });
     }
     return next();
 }
