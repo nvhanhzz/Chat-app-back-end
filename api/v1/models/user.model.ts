@@ -8,6 +8,8 @@ const userSchema: mongoose.Schema = new mongoose.Schema(
         deleted: { type: Boolean, default: false },
         phone: String,
         avatar: String,
+        coverImage: String,
+        description: String,
         status: String
     },
     { timestamps: true }

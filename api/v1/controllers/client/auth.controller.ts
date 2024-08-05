@@ -25,6 +25,7 @@ export const register = async (req: Request, res: Response): Promise<Response> =
 
     req.body.password = await hashPassword(req.body.password);
     req.body.avatar = '';
+    req.body.coverImage = '';
     req.body.status = ListStatus.ACTIVE;
 
     const newUser = new User(req.body);
@@ -61,4 +62,10 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     generateToken(res, user.id, TOKEN_EXP, "token");
 
     return res.status(200).json({ message: "Đăng nhập thành công." });
+}
+
+// [POST] /api/v1/auth/logout
+export const logout = (req: Request, res: Response): Response => {
+    res.clearCookie("token");
+    return res.status(200).json({ message: "Đăng xuất thành công." });
 }

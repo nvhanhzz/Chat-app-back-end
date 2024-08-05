@@ -25,4 +25,10 @@ router.post(
     controller.login
 );
 
+router.post(
+    "/logout",
+    isLoggedIn,
+    controller.logout
+);
+
 export default router;
