@@ -1,7 +1,7 @@
 import { Application } from "express";
 import authRouter from "./auth.route"
 import chatRouter from "./chat.route";
-import { checkToken, isLoggedIn } from "../../middlewares/client/auth";
+import { checkToken } from "../../middlewares/client/auth";
 
 const route = (app: Application) => {
     const prefixV1 = process.env.PREFIX_V1;

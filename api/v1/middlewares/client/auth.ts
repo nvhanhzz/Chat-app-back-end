@@ -1,16 +1,7 @@
-import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import User from '../../models/user.model';
 import ListStatus from "../../../../enums/status.enums";
-
-const verifyToken = (token: string, key: string): { id: string } | null => {
-    try {
-        return jwt.verify(token, key) as { id: string };
-    } catch (err) {
-        console.error('Error verifying token:', err);
-        return null;
-    }
-}
+import verifyToken from "../../../../helper/verifyToken";
 
 interface CheckTokenOptions {
     tokenName: string;
