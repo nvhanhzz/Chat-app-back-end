@@ -69,3 +69,8 @@ export const logout = (req: Request, res: Response): Response => {
     res.clearCookie("token");
     return res.status(200).json({ message: "Đăng xuất thành công." });
 }
+
+// [GET] /api/v1/auth/currentUser
+export const getCurrentUser = (req: Request & { currentUser?: object }, res: Response): Response => {
+    return res.status(200).json({ user: req.currentUser });
+}

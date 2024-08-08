@@ -11,6 +11,12 @@ router.get(
     controller.checkLoggedIn
 );
 
+router.get(
+    "/currentUser",
+    isLoggedIn,
+    controller.getCurrentUser
+);
+
 router.post(
     "/register",
     isLoggedOut,
