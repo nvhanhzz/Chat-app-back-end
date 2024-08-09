@@ -1,4 +1,4 @@
-import { chat } from "./chat.socket"
+import { chat } from "./chat.socket";
 
 const openSocket = () => {
     chat();

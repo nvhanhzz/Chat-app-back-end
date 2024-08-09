@@ -45,7 +45,8 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     const user = await User.findOne({
         email: req.body.email,
         deleted: false
-    });
+    }).select("avatar fullName coverImage description email phone password status"); // Lấy cả password và status
+
     if (!user) {
         return res.status(404).json({ message: "Email hoặc mật khẩu không chính xác." });
     }
@@ -61,7 +62,10 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
 
     generateToken(res, user.id, TOKEN_EXP, "token");
 
-    return res.status(200).json({ message: "Đăng nhập thành công." });
+    // Tạo bản sao của user không chứa mật khẩu
+    const { password, ...userWithoutPassword } = user.toObject();
+
+    return res.status(200).json({ message: "Đăng nhập thành công.", user: userWithoutPassword });
 }
 
 // [POST] /api/v1/auth/logout

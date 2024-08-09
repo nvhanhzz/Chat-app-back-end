@@ -48,7 +48,7 @@ export const checkUser = async (socket: Socket, key: string): Promise<UserInterf
             return null;
         }
     } else {
-        console.log('Token not found');
+        // console.log('Token not found');
         socket.disconnect(true);
         return null;
     }
