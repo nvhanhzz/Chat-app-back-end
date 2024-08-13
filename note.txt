@@ -1,0 +1,1 @@
+- đang không gửi được ảnh có kích thước lớn qua socket.io

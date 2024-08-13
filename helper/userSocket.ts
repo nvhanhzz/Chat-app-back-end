@@ -40,6 +40,7 @@ export const checkUser = async (socket: Socket, key: string): Promise<UserInterf
             const user = await getUser(token, key);
             if (!user) {
                 socket.disconnect(true);
+                return null;
             }
             return user;
         } catch (error) {
@@ -48,7 +49,6 @@ export const checkUser = async (socket: Socket, key: string): Promise<UserInterf
             return null;
         }
     } else {
-        // console.log('Token not found');
         socket.disconnect(true);
         return null;
     }
