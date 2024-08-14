@@ -60,6 +60,16 @@ export const chat = async (): Promise<void> => {
                     console.log(error);
                 }
             });
+
+            socket.on("TYPING", async (type) => {
+                socket.broadcast.emit("SOCKET_BROADCAST_EMIT_TYPING", {
+                    userId: {
+                        _id: currentUser._id,
+                        avatar: currentUser.avatar
+                    },
+                    type: type
+                });
+            });
         }
     });
 };
