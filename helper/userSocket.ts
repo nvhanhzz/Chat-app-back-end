@@ -12,6 +12,9 @@ export interface UserInterface {
     description?: string,
     email?: string,
     phone?: string,
+    receivedFriendRequests?: Array<String>,
+    sentFriendRequests?: Array<String>,
+    friendList?: Array<String>
 }
 
 const getUser = async (token: string, key: string): Promise<UserInterface | null> => {
@@ -21,7 +24,7 @@ const getUser = async (token: string, key: string): Promise<UserInterface | null
             _id: decoded.id,
             deleted: false,
             status: ListStatus.ACTIVE
-        }).select("avatar fullName coverImage description email phone");
+        }).select("-password -status");
 
         return user;
     } catch (e) {

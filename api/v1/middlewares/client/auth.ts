@@ -30,7 +30,7 @@ export const checkToken = (options: CheckTokenOptions = { tokenName: '' }) => {
                 _id: decoded.id,
                 deleted: false,
                 status: ListStatus.ACTIVE
-            }).select("avatar fullName coverImage description email phone");
+            }).select("-password -status");
 
             if (!user) {
                 res.clearCookie(tokenName);

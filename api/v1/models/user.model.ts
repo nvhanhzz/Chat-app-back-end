@@ -1,4 +1,7 @@
 import mongoose from "mongoose";
+import slug from 'mongoose-slug-updater';
+
+mongoose.plugin(slug);
 
 const userSchema: mongoose.Schema = new mongoose.Schema(
     {
@@ -10,6 +13,15 @@ const userSchema: mongoose.Schema = new mongoose.Schema(
         avatar: String,
         coverImage: String,
         description: String,
+        slug: { type: String, slug: "fullName", unique: true },
+        friendList: [
+            {
+                user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+                // room_chat_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ChatRoom' }
+            }
+        ],
+        sentFriendRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+        receivedFriendRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
         status: String
     },
     { timestamps: true }
