@@ -41,7 +41,7 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
             senderId: currentUser._id,
             receiverId: userId,
             type: ListType.FRIEND_REQUEST,
-            // linkTo: `/profile/${currentUser._id}`, 
+            linkTo: `/friends/requests`,
             isRead: false
         });
 

@@ -10,4 +10,10 @@ router.get(
     controller.index
 );
 
+router.patch(
+    "/mark-notification-as-read",
+    isLoggedIn,
+    controller.markNotificationAsRead
+);
+
 export default router;
