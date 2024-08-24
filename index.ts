@@ -4,10 +4,9 @@ import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import http from 'http';
-import { initSocket } from "./api/v1/socket/socket";
 import * as database from "./config/database";
 import clientRoutes from "./api/v1/routes/client/index.route";
-import openSocket from "./api/v1/socket";
+import { initSocket } from "./api/v1/socket/index.socket";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -21,7 +20,6 @@ const server = http.createServer(app);
 
 // Initialize socket.io
 initSocket(server);
-openSocket();
 
 // Middleware
 app.use(cors({
