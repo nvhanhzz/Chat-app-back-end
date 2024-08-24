@@ -6,8 +6,20 @@ import { io, UserSocketMap } from "./index.socket";
 import Notification from "../models/notification.model";
 import ListType from "../../../enums/notificationType.enums";
 
+const getCurrentUserRealTime = async (currentUser: UserInterface): Promise<UserInterface> => {
+    const curentUserRealTime: UserInterface = await User.findOne({
+        _id: currentUser._id,
+        status: ListStatus.ACTIVE,
+        deleted: false
+    }).select("-password");
+
+    return curentUserRealTime;
+}
+
 export const friendSocket = async (socket: Socket, currentUser: UserInterface, users: UserSocketMap) => {
     socket.on("ADD_FRIEND", async (data: { userId: string }) => {
+        const curentUserRealTime: UserInterface = await getCurrentUserRealTime(currentUser);
+
         const userId: string = data.userId;
         const user = await User.findOne({
             _id: userId,
@@ -18,9 +30,9 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
         if (
             !user ||
             userId === currentUser._id.toString() ||
-            currentUser.friendList.includes(userId) ||
-            currentUser.receivedFriendRequests.includes(userId) ||
-            currentUser.sentFriendRequests.includes(userId)
+            curentUserRealTime.friendList.includes(userId) ||
+            curentUserRealTime.receivedFriendRequests.includes(userId) ||
+            curentUserRealTime.sentFriendRequests.includes(userId)
         ) {
             return;
         }
@@ -58,6 +70,70 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
         if (sockets && sockets.length > 0) {
             sockets.forEach((socketId) => {
                 io.to(socketId).emit("SERVER_EMIT_RECIVE_FRIEND_REQUEST", { notification: populatedNotification });
+            });
+        }
+    });
+
+    socket.on("ACCEPT_FIEND_REQUEST", async (data: { userId: string }) => {
+        const curentUserRealTime: UserInterface = await getCurrentUserRealTime(currentUser);
+
+        const userId: string = data.userId;
+        const user = await User.findOne({
+            _id: userId,
+            deleted: false,
+            status: ListStatus.ACTIVE
+        });
+
+        if (
+            !user ||
+            userId === currentUser._id.toString() ||
+            curentUserRealTime.friendList.includes(userId) ||
+            !curentUserRealTime.receivedFriendRequests.includes(userId) ||
+            curentUserRealTime.sentFriendRequests.includes(userId)
+        ) {
+            return;
+        }
+
+        const notification = new Notification({
+            senderId: currentUser._id,
+            receiverId: userId,
+            type: ListType.ACCEPT_FRIEND,
+            linkTo: `/user/${userId}`,
+            isRead: false
+        });
+
+        await Promise.all([
+            User.updateOne(
+                { _id: currentUser._id },
+                {
+                    $push: { friendList: { user_id: userId } },
+                    $pull: { receivedFriendRequests: userId }
+                }
+            ),
+            User.updateOne(
+                { _id: userId },
+                {
+                    $push: { friendList: { user_id: currentUser._id } },
+                    $pull: { sentFriendRequests: currentUser._id }
+                }
+            ),
+            Notification.deleteOne({
+                senderId: userId,
+                receiverId: currentUser._id,
+                type: ListType.FRIEND_REQUEST
+            }),
+            notification.save()
+        ]);
+
+        const populatedNotification = await Notification.findById(notification._id)
+            .populate('senderId', 'fullName avatar slug');
+
+        socket.emit("SERVER_EMIT_ACCEPT_FIEND");
+
+        const sockets = users[userId];
+        if (sockets && sockets.length > 0) {
+            sockets.forEach((socketId) => {
+                io.to(socketId).emit("SERVER_EMIT_RECIVE_ACCEPT_FRIEND", { notification: populatedNotification });
             });
         }
     });

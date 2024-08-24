@@ -10,7 +10,7 @@ export const suggestFriend = async (req: Request & { currentUser?: any }, res: R
             _id: {
                 $ne: currentUser._id,
                 $nin: [
-                    ...currentUser.friendList,
+                    ...currentUser.friendList.map(user => user.user_id),
                     ...currentUser.receivedFriendRequests,
                     ...currentUser.sentFriendRequests
                 ]
