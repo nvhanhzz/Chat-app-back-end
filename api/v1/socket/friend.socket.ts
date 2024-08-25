@@ -137,4 +137,56 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
             });
         }
     });
+
+    socket.on("CANCEL_FIEND_REQUEST", async (data: { userId: string }) => {
+        const curentUserRealTime: UserInterface = await getCurrentUserRealTime(currentUser);
+
+        const userId: string = data.userId;
+        const user = await User.findOne({
+            _id: userId,
+            deleted: false,
+            status: ListStatus.ACTIVE
+        });
+
+        if (
+            !user ||
+            userId === currentUser._id.toString() ||
+            curentUserRealTime.friendList.includes(userId) ||
+            curentUserRealTime.receivedFriendRequests.includes(userId) ||
+            !curentUserRealTime.sentFriendRequests.includes(userId)
+        ) {
+            return;
+        }
+
+        const notfMustDel = await Notification.findOne({
+            receiverId: userId,
+            senderId: currentUser._id,
+            type: ListType.FRIEND_REQUEST
+        }).populate('senderId', 'fullName avatar slug');
+
+        await Promise.all([
+            User.updateOne(
+                { _id: currentUser._id },
+                {
+                    $pull: { sentFriendRequests: userId }
+                }
+            ),
+            User.updateOne(
+                { _id: userId },
+                {
+                    $pull: { receivedFriendRequests: currentUser._id }
+                }
+            ),
+            Notification.findByIdAndDelete(notfMustDel.id)
+        ]);
+
+        socket.emit("SERVER_EMIT_CANCEL_FIEND_REQUEST");
+
+        const sockets = users[userId];
+        if (sockets && sockets.length > 0) {
+            sockets.forEach((socketId) => {
+                io.to(socketId).emit("SERVER_EMIT_RECIVE_CANCEL_FIEND_REQUEST", { notification: notfMustDel });
+            });
+        }
+    });
 };
