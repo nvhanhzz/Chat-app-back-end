@@ -16,8 +16,7 @@ const userSchema: mongoose.Schema = new mongoose.Schema(
         slug: { type: String, slug: "fullName", unique: true },
         friendList: [
             {
-                user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-                // room_chat_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ChatRoom' }
+                user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
             }
         ],
         sentFriendRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

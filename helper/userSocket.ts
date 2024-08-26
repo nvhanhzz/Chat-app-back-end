@@ -14,7 +14,7 @@ export interface UserInterface {
     phone?: string,
     receivedFriendRequests?: Array<String>,
     sentFriendRequests?: Array<String>,
-    friendList?: Array<String>
+    friendList?: Array<{ user_id: string }>
 }
 
 const getUser = async (token: string, key: string): Promise<UserInterface | null> => {

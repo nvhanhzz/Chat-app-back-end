@@ -18,7 +18,7 @@ const getCurrentUserRealTime = async (currentUser: UserInterface): Promise<UserI
 
 export const friendSocket = async (socket: Socket, currentUser: UserInterface, users: UserSocketMap) => {
     socket.on("ADD_FRIEND", async (data: { userId: string }) => {
-        const curentUserRealTime: UserInterface = await getCurrentUserRealTime(currentUser);
+        const currentUserRealTime: UserInterface = await getCurrentUserRealTime(currentUser);
 
         const userId: string = data.userId;
         const user = await User.findOne({
@@ -30,9 +30,9 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
         if (
             !user ||
             userId === currentUser._id.toString() ||
-            curentUserRealTime.friendList.includes(userId) ||
-            curentUserRealTime.receivedFriendRequests.includes(userId) ||
-            curentUserRealTime.sentFriendRequests.includes(userId)
+            currentUserRealTime.friendList.some(friend => friend.user_id.toString() === userId) ||
+            currentUserRealTime.receivedFriendRequests.includes(userId) ||
+            currentUserRealTime.sentFriendRequests.includes(userId)
         ) {
             return;
         }
@@ -75,7 +75,7 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
     });
 
     socket.on("ACCEPT_FIEND_REQUEST", async (data: { userId: string }) => {
-        const curentUserRealTime: UserInterface = await getCurrentUserRealTime(currentUser);
+        const currentUserRealTime: UserInterface = await getCurrentUserRealTime(currentUser);
 
         const userId: string = data.userId;
         const user = await User.findOne({
@@ -87,9 +87,9 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
         if (
             !user ||
             userId === currentUser._id.toString() ||
-            curentUserRealTime.friendList.includes(userId) ||
-            !curentUserRealTime.receivedFriendRequests.includes(userId) ||
-            curentUserRealTime.sentFriendRequests.includes(userId)
+            currentUserRealTime.friendList.some(friend => friend.user_id.toString() === userId) ||
+            !currentUserRealTime.receivedFriendRequests.includes(userId) ||
+            currentUserRealTime.sentFriendRequests.includes(userId)
         ) {
             return;
         }
@@ -139,7 +139,7 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
     });
 
     socket.on("CANCEL_FIEND_REQUEST", async (data: { userId: string }) => {
-        const curentUserRealTime: UserInterface = await getCurrentUserRealTime(currentUser);
+        const currentUserRealTime: UserInterface = await getCurrentUserRealTime(currentUser);
 
         const userId: string = data.userId;
         const user = await User.findOne({
@@ -151,9 +151,9 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
         if (
             !user ||
             userId === currentUser._id.toString() ||
-            curentUserRealTime.friendList.includes(userId) ||
-            curentUserRealTime.receivedFriendRequests.includes(userId) ||
-            !curentUserRealTime.sentFriendRequests.includes(userId)
+            currentUserRealTime.friendList.some(friend => friend.user_id.toString() === userId) ||
+            currentUserRealTime.receivedFriendRequests.includes(userId) ||
+            !currentUserRealTime.sentFriendRequests.includes(userId)
         ) {
             return;
         }
