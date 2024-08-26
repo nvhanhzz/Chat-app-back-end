@@ -4,7 +4,7 @@ import User from "./user.model";
 const chatSchema: mongoose.Schema = new mongoose.Schema(
     {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: User },
-        // roomChatId: mongoose.Schema.Types.ObjectId,
+        roomChatId: { type: mongoose.Schema.Types.ObjectId, ref: 'RoomChat' },
         content: String,
         images: Array,
         deleted: {

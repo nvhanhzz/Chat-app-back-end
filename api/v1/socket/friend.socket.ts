@@ -5,6 +5,8 @@ import { UserInterface } from "../../../helper/userSocket";
 import { io, UserSocketMap } from "./index.socket";
 import Notification from "../models/notification.model";
 import ListType from "../../../enums/notificationType.enums";
+import RoomChat from "../models/roomChat.model";
+import RoomType from "../../../enums/roomType.enums";
 
 const getCurrentUserRealTime = async (currentUser: UserInterface): Promise<UserInterface> => {
     const curentUserRealTime: UserInterface = await User.findOne({
@@ -94,6 +96,12 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
             return;
         }
 
+        const roomChat = new RoomChat({
+            title: '',
+            members: [currentUser._id, userId],
+            type: RoomType.OneToOne,
+        });
+
         const notification = new Notification({
             senderId: currentUser._id,
             receiverId: userId,
@@ -122,7 +130,8 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
                 receiverId: currentUser._id,
                 type: ListType.FRIEND_REQUEST
             }),
-            notification.save()
+            notification.save(),
+            roomChat.save()
         ]);
 
         const populatedNotification = await Notification.findById(notification._id)
