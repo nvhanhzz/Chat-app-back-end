@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import dotenv from "dotenv";
-
 import User from "../../models/user.model";
 import { hashPassword, comparePassword } from "../../../../helper/hashPassword";
 import generateToken from "../../../../helper/generateToken";

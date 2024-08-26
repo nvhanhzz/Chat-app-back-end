@@ -44,6 +44,7 @@ export const checkToken = (options: CheckTokenOptions = { tokenName: '' }) => {
             return next();
         } catch (error) {
             console.error('Error finding user:', error);
+            console.log(error);
             return res.status(500).json({ message: 'Lỗi server.' });
         }
     };

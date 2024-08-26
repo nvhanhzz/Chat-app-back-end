@@ -6,9 +6,15 @@ import { isLoggedIn } from "../../middlewares/client/auth";
 const router: Router = express.Router();
 
 router.get(
-    "/",
+    "/rooms",
     isLoggedIn,
-    controller.index
+    controller.getRoomsChatForUser
+);
+
+router.get(
+    "/:roomId",
+    isLoggedIn,
+    controller.getMessageForRoom
 );
 
 export default router;

@@ -6,6 +6,7 @@ const RoomChatSchema: mongoose.Schema = new mongoose.Schema(
         title: String,
         members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
         type: { type: String, enum: Object.values(RoomType) },
+        avatar: String,
         // theme: String,  
         // quickEmojis: String, 
         deleted: {
