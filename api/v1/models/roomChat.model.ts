@@ -1,10 +1,23 @@
-import { default as mongoose } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 import RoomType from "../../../enums/roomType.enums";
 
-const RoomChatSchema: mongoose.Schema = new mongoose.Schema(
+export interface IRoomChat extends Document {
+    title: string;
+    members: mongoose.Types.ObjectId[];
+    type: RoomType;
+    avatar?: string;
+    // theme?: string;        
+    // quickEmojis?: string;  
+    deleted: boolean;
+    deletedAt?: Date;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const RoomChatSchema: Schema = new Schema(
     {
-        title: String,
-        members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+        title: { type: String },
+        members: [{ type: Schema.Types.ObjectId, ref: 'User' }],
         type: { type: String, enum: Object.values(RoomType) },
         avatar: String,
         // theme: String,  
@@ -18,6 +31,6 @@ const RoomChatSchema: mongoose.Schema = new mongoose.Schema(
     { timestamps: true }
 );
 
-const RoomChat = mongoose.model("RoomChat", RoomChatSchema, "roomchats");
+const RoomChat = mongoose.model<IRoomChat>("RoomChat", RoomChatSchema, "roomchats");
 
 export default RoomChat;

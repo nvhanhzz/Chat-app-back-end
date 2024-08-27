@@ -69,7 +69,7 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
 
         // Gửi sự kiện tới người nhận (nếu đang kết nối)
         const sockets = users[userId];
-        if (sockets && sockets.length > 0) {
+        if (Array.isArray(sockets) && sockets.length > 0) {
             sockets.forEach((socketId) => {
                 io.to(socketId).emit("SERVER_EMIT_RECIVE_FRIEND_REQUEST", { notification: populatedNotification });
             });
@@ -140,7 +140,7 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
         socket.emit("SERVER_EMIT_ACCEPT_FIEND");
 
         const sockets = users[userId];
-        if (sockets && sockets.length > 0) {
+        if (Array.isArray(sockets) && sockets.length > 0) {
             sockets.forEach((socketId) => {
                 io.to(socketId).emit("SERVER_EMIT_RECIVE_ACCEPT_FRIEND", { notification: populatedNotification });
             });
@@ -192,7 +192,7 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
         socket.emit("SERVER_EMIT_CANCEL_FIEND_REQUEST");
 
         const sockets = users[userId];
-        if (sockets && sockets.length > 0) {
+        if (Array.isArray(sockets) && sockets.length > 0) {
             sockets.forEach((socketId) => {
                 io.to(socketId).emit("SERVER_EMIT_RECIVE_CANCEL_FIEND_REQUEST", { notification: notfMustDel });
             });

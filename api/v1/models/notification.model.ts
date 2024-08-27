@@ -1,10 +1,21 @@
-import { default as mongoose } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 import ListType from "../../../enums/notificationType.enums";
+import { IUser } from "./user.model";
 
-const NotificationSchema: mongoose.Schema = new mongoose.Schema(
+export interface INotification extends Document {
+    senderId: IUser["_id"];
+    receiverId: IUser["_id"];
+    type: ListType;
+    isRead: boolean;
+    linkTo?: string;
+    deleted: boolean;
+    createdAt: Date;
+}
+
+const NotificationSchema: Schema<INotification> = new mongoose.Schema(
     {
-        senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        receiverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        senderId: { type: Schema.Types.ObjectId, ref: 'User' },
+        receiverId: { type: Schema.Types.ObjectId, ref: 'User' },
         type: {
             type: String,
             enum: Object.values(ListType),
@@ -12,21 +23,11 @@ const NotificationSchema: mongoose.Schema = new mongoose.Schema(
         },
         isRead: { type: Boolean, default: false },
         linkTo: { type: String },
-        // relatedPostId: {
-        //     type: mongoose.Schema.Types.ObjectId, ref: 'Post', required: function () {
-        //         return this.type === ListType.COMMENT || this.type === ListType.LIKE;
-        //     }
-        // },
-        // relatedCommentId: {
-        //     type: mongoose.Schema.Types.ObjectId, ref: 'Comment', required: function () {
-        //         return this.type === ListType.LIKE;
-        //     }
-        // }, 
         deleted: { type: Boolean, default: false },
         createdAt: { type: Date, default: Date.now }
     }
 );
 
-const Notification = mongoose.model("Notification", NotificationSchema, "notifications");
+const Notification = mongoose.model<INotification>("Notification", NotificationSchema, "notifications");
 
 export default Notification;

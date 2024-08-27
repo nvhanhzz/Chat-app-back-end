@@ -40,7 +40,7 @@ export const initSocket = (server: http.Server) => {
 
         // Sử dụng các handler cho từng loại socket
         friendSocket(socket, currentUser, users);
-        chatSocket(socket, currentUser);
+        chatSocket(socket, currentUser, users);
         authSocket(socket);
 
         socket.on('disconnect', () => {

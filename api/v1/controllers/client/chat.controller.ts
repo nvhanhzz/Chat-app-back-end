@@ -34,12 +34,14 @@ export const getRoomsChatForUser = async (req: Request & { currentUser?: UserInt
             let avatar = room.avatar;
             let title = room.title;
             if (room.type === RoomType.OneToOne) {
-                const members: string[] = room.members as string[];
-                const otherUserId = members.find(id => String(id) !== String(userId));
+                const members: string[] = room.members.map(member => member.toString());
+                const otherUserId = members.find(id => id !== String(userId));
                 if (otherUserId) {
                     const otherUser = await User.findById(otherUserId);
-                    avatar = otherUser?.avatar;
-                    title = otherUser?.fullName || title;
+                    if (otherUser) {
+                        avatar = otherUser.avatar;
+                        title = otherUser.fullName || title;
+                    }
                 }
             }
 
@@ -47,16 +49,19 @@ export const getRoomsChatForUser = async (req: Request & { currentUser?: UserInt
                 roomId: room._id,
                 title: title,
                 avatar: avatar,
-                lastMessage: lastMessage ? lastMessage.lastMessage.content : null,
-                lastMessageAt: lastMessage ? lastMessage.lastMessage.createdAt : null,
+                lastMessage: {
+                    content: lastMessage ? lastMessage.lastMessage.content : null,
+                    createAt: lastMessage ? lastMessage.lastMessage.createdAt : null,
+                    userId: lastMessage ? lastMessage.lastMessage.userId : null
+                }
             };
         }));
 
         result.sort((a, b) => {
-            if (!a.lastMessageAt && !b.lastMessageAt) return 0;
-            if (!a.lastMessageAt) return 1;
-            if (!b.lastMessageAt) return -1;
-            return b.lastMessageAt.getTime() - a.lastMessageAt.getTime();
+            if (!a.lastMessage.createAt && !b.lastMessage.createAt) return 0;
+            if (!a.lastMessage.createAt) return 1;
+            if (!b.lastMessage.createAt) return -1;
+            return b.lastMessage.createAt.getTime() - a.lastMessage.createAt.getTime();
         });
 
         return res.status(200).json({ rooms: result });
