@@ -19,6 +19,8 @@ export interface IUser extends Document {
     sentFriendRequests: mongoose.Types.ObjectId[];
     receivedFriendRequests: mongoose.Types.ObjectId[];
     status?: string;
+    isOnline: boolean;
+    lastOnline: Date;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -41,7 +43,9 @@ const userSchema: Schema<IUser> = new Schema(
         ],
         sentFriendRequests: [{ type: Schema.Types.ObjectId, ref: 'User' }],
         receivedFriendRequests: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-        status: String
+        status: String,
+        isOnline: { type: Boolean, default: false },
+        lastOnline: { type: Date }
     },
     { timestamps: true }
 );

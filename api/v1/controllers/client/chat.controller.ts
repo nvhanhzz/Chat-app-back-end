@@ -1,16 +1,16 @@
 import { Request, Response } from "express";
 import Chat from "../../models/chat.model";
 import { UserInterface } from "../../../../helper/userSocket";
-import RoomChat from "../../models/roomChat.model";
+import RoomChat, { IRoomChat } from "../../models/roomChat.model";
 import RoomType from "../../../../enums/roomType.enums";
-import User from "../../models/user.model";
+import User, { IUser } from "../../models/user.model";
 
 // [GET] /api/v1/chat/rooms
 export const getRoomsChatForUser = async (req: Request & { currentUser?: UserInterface }, res: Response): Promise<Response> => {
     try {
         const userId = req.currentUser._id;
 
-        const rooms = await RoomChat.find({ members: userId });
+        const rooms: IRoomChat[] = await RoomChat.find({ members: userId });
         const roomIds = rooms.map(room => room._id);
 
         const lastMessages = await Chat.aggregate([
@@ -33,14 +33,22 @@ export const getRoomsChatForUser = async (req: Request & { currentUser?: UserInt
 
             let avatar = room.avatar;
             let title = room.title;
+            let isOnline = false;
+            let lastOnline: Date = new Date(Date.now());
             if (room.type === RoomType.OneToOne) {
                 const members: string[] = room.members.map(member => member.toString());
                 const otherUserId = members.find(id => id !== String(userId));
                 if (otherUserId) {
-                    const otherUser = await User.findById(otherUserId);
+                    const otherUser: IUser = await User.findById(otherUserId);
                     if (otherUser) {
                         avatar = otherUser.avatar;
                         title = otherUser.fullName || title;
+
+                        if (otherUser.isOnline) {
+                            isOnline = true;
+                        } else {
+                            lastOnline = otherUser.lastOnline;
+                        }
                     }
                 }
             }
@@ -49,6 +57,9 @@ export const getRoomsChatForUser = async (req: Request & { currentUser?: UserInt
                 roomId: room._id,
                 title: title,
                 avatar: avatar,
+                type: room.type,
+                isOnline: isOnline,
+                lastOnline: lastOnline,
                 lastMessage: {
                     content: lastMessage ? lastMessage.lastMessage.content : null,
                     createAt: lastMessage ? lastMessage.lastMessage.createdAt : null,
@@ -84,6 +95,6 @@ export const getMessageForRoom = async (req: Request & { currentUser?: object },
 
         return res.status(200).json({ chats: chats });
     } catch (e) {
-        return res.status(500).json({ message: "Lỗi server." })
+        return res.status(500).json({ message: "Internal server error." })
     }
 }

@@ -1,9 +1,11 @@
 import { Server, Socket } from "socket.io";
-import { authSocket } from "./auth.socket";
 import { checkUser, UserInterface } from "../../../helper/userSocket";
 import http from 'http';
-import { friendSocket } from "./friend.socket";
+import authSocket from "./auth.socket";
+import friendSocket from "./friend.socket";
 import chatSocket from "./chat.socket";
+import User from "../models/user.model";
+import onlineSocket from "./online.socket";
 
 export let io: Server;
 
@@ -11,7 +13,7 @@ export interface UserSocketMap {
     [userId: string]: string[];
 }
 
-let users: UserSocketMap = {};
+export let users: UserSocketMap = {};
 
 export const initSocket = (server: http.Server) => {
     io = new Server(server, {
@@ -35,24 +37,47 @@ export const initSocket = (server: http.Server) => {
             users[userId].push(socket.id);
         } else {
             users[userId] = [socket.id];
+            try {
+                await User.updateOne(
+                    {
+                        _id: userId
+                    },
+                    {
+                        isOnline: true
+                    }
+                );
+            } catch (error) {
+                console.error(`Failed to update user ${userId} on connect:`, error);
+            }
+            onlineSocket(currentUser, users, { isOnline: true, lastOnline: new Date(Date.now()) });
         }
-        // console.log(users);
 
-        // Sử dụng các handler cho từng loại socket
         friendSocket(socket, currentUser, users);
         chatSocket(socket, currentUser, users);
         authSocket(socket);
 
-        socket.on('disconnect', () => {
-            // console.log('User disconnected:', socket.id);
+        socket.on('disconnect', async () => {
             const socketIndex = users[userId].indexOf(socket.id);
             if (socketIndex !== -1) {
                 users[userId].splice(socketIndex, 1);
             }
             if (users[userId].length === 0) {
                 delete users[userId];
+                try {
+                    await User.updateOne(
+                        {
+                            _id: userId
+                        },
+                        {
+                            isOnline: false,
+                            lastOnline: Date.now()
+                        }
+                    );
+                } catch (error) {
+                    console.error(`Failed to update user ${userId} on disconnect:`, error);
+                }
+                onlineSocket(currentUser, users, { isOnline: false, lastOnline: new Date(Date.now()) });
             }
-            // console.log(users);
         });
 
     });

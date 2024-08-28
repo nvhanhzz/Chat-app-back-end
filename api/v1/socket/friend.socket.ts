@@ -18,7 +18,7 @@ const getCurrentUserRealTime = async (currentUser: UserInterface): Promise<UserI
     return curentUserRealTime;
 }
 
-export const friendSocket = async (socket: Socket, currentUser: UserInterface, users: UserSocketMap) => {
+const friendSocket = async (socket: Socket, currentUser: UserInterface, users: UserSocketMap) => {
     socket.on("ADD_FRIEND", async (data: { userId: string }) => {
         const currentUserRealTime: UserInterface = await getCurrentUserRealTime(currentUser);
 
@@ -39,7 +39,6 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
             return;
         }
 
-        // Cập nhật danh sách yêu cầu kết bạn
         await User.updateOne(
             { _id: currentUser._id },
             { $push: { sentFriendRequests: userId } }
@@ -50,7 +49,6 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
             { $push: { receivedFriendRequests: currentUser._id } }
         );
 
-        // Lưu thông báo vào cơ sở dữ liệu
         const notification = new Notification({
             senderId: currentUser._id,
             receiverId: userId,
@@ -64,10 +62,8 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
         const populatedNotification = await Notification.findById(notification._id)
             .populate('senderId', 'fullName avatar slug');
 
-        // Gửi sự kiện tới người gửi
         socket.emit("SERVER_EMIT_SENT_FRIEND_REQUEST");
 
-        // Gửi sự kiện tới người nhận (nếu đang kết nối)
         const sockets = users[userId];
         if (Array.isArray(sockets) && sockets.length > 0) {
             sockets.forEach((socketId) => {
@@ -199,3 +195,5 @@ export const friendSocket = async (socket: Socket, currentUser: UserInterface, u
         }
     });
 };
+
+export default friendSocket;

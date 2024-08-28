@@ -41,7 +41,7 @@ const getSocketsOfRoomChat = async (roomChatId: string, users: UserSocketMap): P
     return sockets;
 }
 
-export const chatSocket = async (socket: Socket, currentUser: UserInterface, users: UserSocketMap) => {
+const chatSocket = async (socket: Socket, currentUser: UserInterface, users: UserSocketMap) => {
     socket.on("SEND_MESSAGE", async (data: SendMessageData) => {
         try {
             const buffers = data.fileList.map(item => item.originFileObj);
