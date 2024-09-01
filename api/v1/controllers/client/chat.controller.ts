@@ -10,7 +10,10 @@ export const getRoomsChatForUser = async (req: Request & { currentUser?: UserInt
     try {
         const userId = req.currentUser._id;
 
-        const rooms: IRoomChat[] = await RoomChat.find({ members: userId });
+        const rooms: IRoomChat[] = await RoomChat
+            .find({ members: userId })
+            .populate("members", "fullName avatar");
+
         const roomIds = rooms.map(room => room._id);
 
         const lastMessages = await Chat.aggregate([
@@ -36,14 +39,11 @@ export const getRoomsChatForUser = async (req: Request & { currentUser?: UserInt
             let isOnline = false;
             let lastOnline: Date = new Date(Date.now());
             if (room.type === RoomType.OneToOne) {
-                const members: string[] = room.members.map(member => member.toString());
-                const otherUserId = members.find(id => id !== String(userId));
+                const otherMember = room.members.find(member => !member._id.equals(userId));
+                const otherUserId = otherMember._id.toString();
                 if (otherUserId) {
                     const otherUser: IUser = await User.findById(otherUserId);
                     if (otherUser) {
-                        avatar = otherUser.avatar;
-                        title = otherUser.fullName || title;
-
                         if (otherUser.isOnline) {
                             isOnline = true;
                         } else {
@@ -60,6 +60,7 @@ export const getRoomsChatForUser = async (req: Request & { currentUser?: UserInt
                 type: room.type,
                 isOnline: isOnline,
                 lastOnline: lastOnline,
+                members: room.members,
                 lastMessage: {
                     content: lastMessage ? lastMessage.lastMessage.content : null,
                     createAt: lastMessage ? lastMessage.lastMessage.createdAt : null,

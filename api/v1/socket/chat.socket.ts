@@ -1,9 +1,10 @@
 import { UserInterface } from "../../../helper/userSocket";
 import Chat, { IChat } from "../models/chat.model";
-import { uploadMultipleFile } from "../../../helper/uploadFileToCloudinary";
+import { uploadMultipleFile, uploadSingleFile } from "../../../helper/uploadFileToCloudinary";
 import { Socket } from "socket.io";
 import { io, UserSocketMap } from "./index.socket";
 import RoomChat, { IRoomChat } from "../models/roomChat.model";
+import RoomType from "../../../enums/roomType.enums";
 
 interface SendMessageData {
     roomChatId: string;
@@ -17,6 +18,12 @@ interface Typing {
     roomChatId: string;
     type: 'show' | 'hide';
 }
+
+interface GroupData {
+    groupName: string;
+    avatar: Buffer | string | null;
+    members: string[];
+};
 
 const getSocketsOfRoomChat = async (roomChatId: string, users: UserSocketMap): Promise<string[]> => {
     const room: IRoomChat | null = await RoomChat.findOne({
@@ -95,6 +102,47 @@ const chatSocket = async (socket: Socket, currentUser: UserInterface, users: Use
                     roomChatId: typing.roomChatId
                 });
             });
+        }
+    });
+
+    socket.on("CREAT_GROUP_CHAT", async (data: GroupData) => {
+        try {
+            data.members.push(currentUser._id);
+            if (data.avatar) {
+                data.avatar = await uploadSingleFile(data.avatar as Buffer);
+            }
+
+            if (data.members.length < 3) {
+                return;
+            }
+
+            const roomChat = new RoomChat({
+                title: data.groupName,
+                avatar: data.avatar,
+                members: data.members,
+                type: RoomType.Group
+            });
+
+            const savedRoomChat = await roomChat.save();
+
+            if (savedRoomChat) {
+                const populatedRoomChat = await savedRoomChat.populate('members', 'fullName avatar');
+
+                for (const member of populatedRoomChat.members) {
+                    const sockets = users[member._id.toString()];
+                    if (Array.isArray(sockets) && sockets.length > 0) {
+                        sockets.forEach((socketId) => {
+                            io.to(socketId).emit("SERVER_EMIT_CREATE_NEW_GROUP", {
+                                group: populatedRoomChat
+                            });
+                        });
+                    }
+                }
+            } else {
+                console.log('Không thể lưu room chat.');
+            }
+        } catch (error) {
+            console.error('Đã xảy ra lỗi khi lưu room chat:', error);
         }
     });
 }
